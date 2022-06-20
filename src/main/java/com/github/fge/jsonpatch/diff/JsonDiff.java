@@ -104,6 +104,11 @@ public final class JsonDiff
      */
     public static JsonNode asJson(final JsonNode source, final JsonNode target)
     {
+        return asJson(source,target, false);
+    }
+    
+        public static JsonNode asJson(final JsonNode source, final JsonNode target, final boolean includeAll)
+    {
         final String s;
         try {
             s = MAPPER.writeValueAsString(asJsonPatch(source, target));
@@ -112,6 +117,7 @@ public final class JsonDiff
             throw new RuntimeException("cannot generate JSON diff", e);
         }
     }
+
 
     private static void generateDiffs(final DiffProcessor processor,
         final JsonPointer pointer, final JsonNode source, final JsonNode target)
