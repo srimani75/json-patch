@@ -3,9 +3,7 @@ package com.github.fge.jsonpatch;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-/**
- * @author {@literal @}soberich on 30-Nov-18
- */
+
 public final class Iterables {
 
     private Iterables() {}
