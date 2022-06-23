@@ -84,13 +84,32 @@ public final class JsonDiff
     public static JsonPatch asJsonPatch(final JsonNode source,
         final JsonNode target)
     {
+        return asJsonPatch( source, target, false, null);
+    }
+
+    public static JsonPatch asJsonPatch(final JsonNode source,
+                                        final JsonNode target, final boolean includeAll, final List<string> removeList) {
         BUNDLE.checkNotNull(source, "common.nullArgument");
         BUNDLE.checkNotNull(target, "common.nullArgument");
         final Map<JsonPointer, JsonNode> unchanged
-            = getUnchangedValues(source, target);
+                = getUnchangedValues(source, target);
         final DiffProcessor processor = new DiffProcessor(unchanged);
 
         generateDiffs(processor, JsonPointer.empty(), source, target);
+        if(includeAll) {
+            boolean isListNullOrEmpty =  removeList == null || removeList.isEmpty();
+            for (Map.Entry<JsonPointer, JsonNode> set : unchanged.entrySet()) {
+                if (!isListNullOrEmpty) {
+                    for (String rem : removeList) {
+                        if(!set.getValue().toLowerCase().contains(rem.toLowerCase())){
+                            processor.valueReplaced(set.getKey(), set.getValue(), set.getValue());
+                        }
+                    }
+                } else {
+                    processor.valueReplaced(set.getKey(), set.getValue(), set.getValue());
+                }
+            }
+        }
         return processor.getPatch();
     }
 
@@ -106,18 +125,18 @@ public final class JsonDiff
     {
         return asJson(source,target, false);
     }
-    
-        public static JsonNode asJson(final JsonNode source, final JsonNode target, final boolean includeAll)
+
+
+    public static JsonNode asJson(final JsonNode source, final JsonNode target, final boolean includeAll)
     {
         final String s;
         try {
-            s = MAPPER.writeValueAsString(asJsonPatch(source, target));
+            s = MAPPER.writeValueAsString(asJsonPatch(source, target,includeAll));
             return MAPPER.readTree(s);
         } catch (IOException e) {
             throw new RuntimeException("cannot generate JSON diff", e);
         }
     }
-
 
     private static void generateDiffs(final DiffProcessor processor,
         final JsonPointer pointer, final JsonNode source, final JsonNode target)
