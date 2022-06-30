@@ -88,7 +88,7 @@ public final class JsonDiff
     }
 
     public static JsonPatch asJsonPatch(final JsonNode source,
-                                        final JsonNode target, final boolean includeAll, final List<string> removeList) {
+                                        final JsonNode target, final boolean includeAll, final List<String> removeList) {
         BUNDLE.checkNotNull(source, "common.nullArgument");
         BUNDLE.checkNotNull(target, "common.nullArgument");
         final Map<JsonPointer, JsonNode> unchanged
@@ -101,7 +101,7 @@ public final class JsonDiff
             for (Map.Entry<JsonPointer, JsonNode> set : unchanged.entrySet()) {
                 if (!isListNullOrEmpty) {
                     for (String rem : removeList) {
-                        if(!set.getValue().toLowerCase().contains(rem.toLowerCase())){
+                        if(!set.getValue().asText().toLowerCase().contains(rem.toLowerCase())){
                             processor.valueReplaced(set.getKey(), set.getValue(), set.getValue());
                         }
                     }
@@ -121,17 +121,17 @@ public final class JsonDiff
      * @param target the expected result after applying the patch
      * @return the patch as a {@link JsonNode}
      */
-    public static JsonNode asJson(final JsonNode source, final JsonNode target)
+    public static JsonNode asJson(final JsonNode source, final JsonNode target, final List<String> removeList)
     {
-        return asJson(source,target, false);
+        return asJson(source,target, false, removeList);
     }
 
 
-    public static JsonNode asJson(final JsonNode source, final JsonNode target, final boolean includeAll)
+    public static JsonNode asJson(final JsonNode source, final JsonNode target, final boolean includeAll, final List<String> removeList)
     {
         final String s;
         try {
-            s = MAPPER.writeValueAsString(asJsonPatch(source, target,includeAll));
+            s = MAPPER.writeValueAsString(asJsonPatch(source, target,includeAll,removeList));
             return MAPPER.readTree(s);
         } catch (IOException e) {
             throw new RuntimeException("cannot generate JSON diff", e);
